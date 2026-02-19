@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: test-strategy-backend
+    environment:
+      - DATABASE_URL=sqlite:///./test_strategy.db
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - CONFLUENCE_BASE_URL=${CONFLUENCE_BASE_URL:-}
+      - CONFLUENCE_USER_EMAIL=${CONFLUENCE_USER_EMAIL:-}
+      - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN:-}
+      - JIRA_BASE_URL=${JIRA_BASE_URL:-}
+      - JIRA_USER_EMAIL=${JIRA_USER_EMAIL:-}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN:-}
+    volumes:
+      - backend_data:/app/uploads
+      - db_data:/app
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  frontend:
+    build: ./frontend
+    container_name: test-strategy-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  backend_data:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge
+
