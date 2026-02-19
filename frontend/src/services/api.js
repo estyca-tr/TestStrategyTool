@@ -1,4 +1,5 @@
-const API_BASE = '/api'
+// In production, use the full backend URL; in development, use relative path (proxied by Vite)
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 async function fetchAPI(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`
