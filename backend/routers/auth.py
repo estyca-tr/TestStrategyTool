@@ -95,19 +95,23 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
-    """Login with email and password"""
-    user = db.query(User).filter(User.email == credentials.email.lower()).first()
+    """Login with username and password"""
+    # Try to find by username first, then by email for backwards compatibility
+    user = db.query(User).filter(User.name == credentials.username).first()
+    if not user:
+        # Fallback to email lookup
+        user = db.query(User).filter(User.email == credentials.username.lower()).first()
     
     if not user or not user.password_hash:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Invalid username or password"
         )
     
     if not verify_password(credentials.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Invalid username or password"
         )
     
     if not user.is_active:

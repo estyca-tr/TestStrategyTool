@@ -10,7 +10,7 @@ function Layout() {
   
   // Login form state
   const [authMode, setAuthMode] = useState('login') // login | register
-  const [authForm, setAuthForm] = useState({ email: '', password: '', name: '', team: '', role: '' })
+  const [authForm, setAuthForm] = useState({ username: '', email: '', password: '', name: '', team: '', role: '' })
   const [authError, setAuthError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -47,7 +47,7 @@ function Layout() {
     try {
       let result
       if (authMode === 'login') {
-        result = await authAPI.login(authForm.email, authForm.password)
+        result = await authAPI.login(authForm.username, authForm.password)
       } else {
         result = await authAPI.register({
           email: authForm.email,
@@ -143,16 +143,28 @@ function Layout() {
                 </div>
               )}
               
-              <div className="auth-field">
-                <Mail size={18} />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={authForm.email}
-                  onChange={e => setAuthForm({...authForm, email: e.target.value})}
-                  required
-                />
-              </div>
+              {authMode === 'login' ? (
+                <div className="auth-field">
+                  <User size={18} />
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={authForm.username}
+                    onChange={e => setAuthForm({...authForm, username: e.target.value})}
+                    required
+                  />
+                </div>
+              ) : (
+                <div className="auth-field">
+                  <Mail size={18} />
+                  <input
+                    type="email"
+                    placeholder="Email (optional)"
+                    value={authForm.email}
+                    onChange={e => setAuthForm({...authForm, email: e.target.value})}
+                  />
+                </div>
+              )}
               
               <div className="auth-field">
                 <Lock size={18} />

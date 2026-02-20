@@ -306,9 +306,9 @@ export const authAPI = {
     return result
   }),
   
-  login: (email, password) => fetchAPI('/auth/login', {
+  login: (username, password) => fetchAPI('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ username, password })
   }).then(result => {
     if (result.access_token) {
       localStorage.setItem(AUTH_TOKEN_KEY, result.access_token)

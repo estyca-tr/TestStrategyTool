@@ -8,6 +8,7 @@ function AuthModal({ isOpen, onClose, onSuccess }) {
   const [error, setError] = useState('')
   
   const [formData, setFormData] = useState({
+    username: '',
     email: '',
     password: '',
     name: '',
@@ -24,7 +25,7 @@ function AuthModal({ isOpen, onClose, onSuccess }) {
       let result
       
       if (mode === 'login') {
-        result = await authAPI.login(formData.email, formData.password)
+        result = await authAPI.login(formData.username, formData.password)
       } else {
         result = await authAPI.register({
           email: formData.email,
@@ -81,16 +82,28 @@ function AuthModal({ isOpen, onClose, onSuccess }) {
             </div>
           )}
 
-          <div className="auth-field">
-            <Mail size={18} />
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={e => updateField('email', e.target.value)}
-              required
-            />
-          </div>
+          {mode === 'login' ? (
+            <div className="auth-field">
+              <User size={18} />
+              <input
+                type="text"
+                placeholder="Username"
+                value={formData.username}
+                onChange={e => updateField('username', e.target.value)}
+                required
+              />
+            </div>
+          ) : (
+            <div className="auth-field">
+              <Mail size={18} />
+              <input
+                type="email"
+                placeholder="Email (optional)"
+                value={formData.email}
+                onChange={e => updateField('email', e.target.value)}
+              />
+            </div>
+          )}
 
           <div className="auth-field">
             <Lock size={18} />
