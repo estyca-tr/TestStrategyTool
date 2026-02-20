@@ -53,9 +53,20 @@ def get_current_user(token: str, db: Session) -> Optional[User]:
 @router.post("/register", response_model=TokenResponse)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """Register a new user"""
+    # Check if username (name) exists
+    existing_name = db.query(User).filter(User.name == user_data.name).first()
+    if existing_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken"
+        )
+    
+    # Generate email if not provided (use username as placeholder)
+    email = user_data.email.lower() if user_data.email else f"{user_data.name.lower().replace(' ', '_')}@user.local"
+    
     # Check if email exists
-    existing = db.query(User).filter(User.email == user_data.email.lower()).first()
-    if existing:
+    existing_email = db.query(User).filter(User.email == email).first()
+    if existing_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
@@ -63,7 +74,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     
     # Create user
     db_user = User(
-        email=user_data.email.lower(),
+        email=email,
         name=user_data.name,
         password_hash=hash_password(user_data.password) if user_data.password else None,
         team=user_data.team,

@@ -354,8 +354,8 @@ class StrategyProgress(BaseModel):
 # ============== User & Authentication Schemas ==============
 
 class UserBase(BaseModel):
-    email: str = Field(..., min_length=5, max_length=255)
-    name: str = Field(..., min_length=1, max_length=200)
+    email: Optional[str] = Field(None, max_length=255)  # Email is optional
+    name: str = Field(..., min_length=1, max_length=200)  # Name is the username
     team: Optional[str] = None
     role: Optional[str] = None
 
