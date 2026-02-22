@@ -6,6 +6,7 @@ import { format, parseISO } from 'date-fns'
 
 function Dashboard() {
   const [stats, setStats] = useState({ projects: 0, strategies: 0 })
+  const [projects, setProjects] = useState([])
   const [recentStrategies, setRecentStrategies] = useState([])
   const [loading, setLoading] = useState(true)
   
@@ -16,13 +17,14 @@ function Dashboard() {
   async function loadData() {
     try {
       setLoading(true)
-      const [projects, strategies] = await Promise.all([
+      const [projectsData, strategies] = await Promise.all([
         projectsAPI.getAll(),
         strategiesAPI.getAll({ limit: 5 })
       ])
       
+      setProjects(projectsData)
       setStats({
-        projects: projects.length,
+        projects: projectsData.length,
         strategies: strategies.length
       })
       setRecentStrategies(strategies)
@@ -102,6 +104,50 @@ function Dashboard() {
             <ArrowRight size={20} />
           </Link>
         </div>
+      </div>
+      
+      {/* My Projects */}
+      <div className="card mb-lg">
+        <div className="card-header">
+          <h3>
+            <FolderOpen size={20} style={{ marginRight: '8px', verticalAlign: 'middle', color: 'var(--accent-cyan)' }} />
+            My Projects
+          </h3>
+          <Link to="/projects" className="btn btn-ghost">
+            View All
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+        
+        {projects.length > 0 ? (
+          <div className="projects-grid">
+            {projects.slice(0, 6).map(project => (
+              <Link 
+                key={project.id} 
+                to={`/projects/${project.id}`}
+                className="project-card-mini"
+              >
+                <div className="project-icon-mini">
+                  <FolderOpen size={18} />
+                </div>
+                <div className="project-info-mini">
+                  <h4>{project.name}</h4>
+                  <p>{project.description || 'No description'}</p>
+                </div>
+                {project.is_cross_team && (
+                  <span className="badge badge-purple">Cross-Team</span>
+                )}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state-small">
+            <p>No projects yet</p>
+            <Link to="/projects" className="btn btn-primary btn-sm mt-sm">
+              Create Project
+            </Link>
+          </div>
+        )}
       </div>
       
       {/* Recent Strategies */}
@@ -282,6 +328,107 @@ function Dashboard() {
           .actions-grid {
             grid-template-columns: 1fr;
           }
+        }
+        
+        /* Projects Grid */
+        .projects-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: var(--space-md);
+          padding: var(--space-sm);
+        }
+        
+        @media (max-width: 1000px) {
+          .projects-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        
+        @media (max-width: 600px) {
+          .projects-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        
+        .project-card-mini {
+          display: flex;
+          align-items: flex-start;
+          gap: var(--space-sm);
+          padding: var(--space-md);
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          text-decoration: none;
+          color: inherit;
+          transition: all 0.2s ease;
+          position: relative;
+        }
+        
+        .project-card-mini:hover {
+          border-color: var(--accent-cyan);
+          background: var(--bg-hover);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .project-icon-mini {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+          border-radius: var(--radius-sm);
+          flex-shrink: 0;
+        }
+        
+        .project-icon-mini svg {
+          color: white;
+        }
+        
+        .project-info-mini {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .project-info-mini h4 {
+          font-size: 0.95rem;
+          font-weight: 600;
+          margin-bottom: 2px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .project-info-mini p {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .project-card-mini .badge {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          font-size: 0.65rem;
+          padding: 2px 6px;
+        }
+        
+        .badge-purple {
+          background: rgba(139, 92, 246, 0.2);
+          color: var(--accent-purple);
+        }
+        
+        .empty-state-small {
+          padding: var(--space-lg);
+          text-align: center;
+          color: var(--text-muted);
+        }
+        
+        .empty-state-small p {
+          margin-bottom: var(--space-sm);
         }
       `}</style>
     </div>
