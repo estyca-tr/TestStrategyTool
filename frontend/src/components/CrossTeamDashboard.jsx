@@ -118,6 +118,14 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
   
   categories.forEach(category => extractTeamsFromCategory(category))
   
+  // Debug log
+  console.log('CrossTeamDashboard Debug:', {
+    categoriesCount: categories.length,
+    categories: categories,
+    breakdownTeams: breakdownTeams,
+    participantTeams: participantTeams
+  })
+  
   // Combine all unique teams
   const teams = [...new Set([...participantTeams, ...breakdownTeams])]
 
