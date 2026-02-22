@@ -36,6 +36,6 @@ def init_db():
     from models import (
         Project, Document, TestStrategy, TestPlan, 
         Comment, Participant, BreakdownCategory, BreakdownItem,
-        User, Share, Permission
+        User, Share
     )
     Base.metadata.create_all(bind=engine)
