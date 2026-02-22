@@ -535,6 +535,13 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                       placeholder="What this team needs to test..."
                                     />
                                   </div>
+                                  <textarea
+                                    value={editingSubItem.description || ''}
+                                    onChange={e => setEditingSubItem({ ...editingSubItem, description: e.target.value })}
+                                    className="form-textarea form-textarea-sm"
+                                    placeholder="📝 Description / Details (optional)..."
+                                    rows={2}
+                                  />
                                   <div className="be-sub-item-edit-row">
                                     <select
                                       value={editingSubItem.assignee_id || ''}
@@ -663,6 +670,13 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                   placeholder="What this team needs to test..."
                                 />
                               </div>
+                              <textarea
+                                value={newItem.description || ''}
+                                onChange={e => setNewItem({ ...newItem, description: e.target.value })}
+                                className="form-textarea form-textarea-sm"
+                                placeholder="📝 Description / Details (optional)..."
+                                rows={2}
+                              />
                               <div className="be-add-item-row">
                                 <select
                                   value={newItem.assignee_id || ''}
@@ -677,7 +691,7 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                     ))
                                   }
                                 </select>
-                                <button className="btn btn-ghost btn-xs" onClick={() => { setAddingSubItemTo(null); setShowCustomTeamInput(false); setNewItem({ ...newItem, team: '', title: '' }); }}>Cancel</button>
+                                <button className="btn btn-ghost btn-xs" onClick={() => { setAddingSubItemTo(null); setShowCustomTeamInput(false); setNewItem({ ...newItem, team: '', title: '', description: '' }); }}>Cancel</button>
                                 <button className="btn btn-primary btn-xs" onClick={() => handleAddItem(category.id, item.id)}>Add</button>
                               </div>
                             </div>
@@ -697,6 +711,13 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                         className="form-input"
                         placeholder="What needs to be tested?"
                         autoFocus
+                      />
+                      <textarea
+                        value={newItem.description || ''}
+                        onChange={e => setNewItem({ ...newItem, description: e.target.value })}
+                        className="form-textarea"
+                        placeholder="📝 Description / Details (optional)..."
+                        rows={2}
                       />
                       <div className="be-add-item-row">
                         <select
@@ -1478,6 +1499,28 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
           display: flex;
           gap: var(--space-sm);
           align-items: center;
+        }
+        
+        .form-textarea-sm {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.8rem;
+          min-height: 60px;
+          resize: vertical;
+          width: 100%;
+          background: var(--bg-input);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-sm);
+          color: var(--text-primary);
+        }
+        
+        .form-textarea-sm:focus {
+          outline: none;
+          border-color: var(--accent-primary);
+          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+        }
+        
+        .form-textarea-sm::placeholder {
+          color: var(--text-muted);
         }
         
         .be-sub-item-edit-row .form-input {
