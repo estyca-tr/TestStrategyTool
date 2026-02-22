@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { LayoutDashboard, FolderOpen, FileText, ClipboardCheck, PenTool, User, LogIn, LogOut, Share2, Lock, Mail, Eye, EyeOff, Users, Briefcase } from 'lucide-react'
 import { authAPI } from '../services/api'
 
 function Layout() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [currentUser, setCurrentUser] = useState(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -58,6 +60,8 @@ function Layout() {
         })
       }
       setCurrentUser(result.user)
+      // Redirect to dashboard after successful login
+      navigate('/', { replace: true })
     } catch (err) {
       setAuthError(err.message)
     } finally {
