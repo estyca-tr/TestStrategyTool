@@ -5,10 +5,18 @@ import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test_strategy.db")
 
-engine = create_engine(
-    DATABASE_URL, 
-    connect_args={"check_same_thread": False}
-)
+# Railway uses postgres:// but SQLAlchemy needs postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# SQLite needs special connect_args, PostgreSQL doesn't
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL, 
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -26,4 +34,3 @@ def get_db():
 def init_db():
     from models import Project, Document, TestStrategy, TestPlan
     Base.metadata.create_all(bind=engine)
-
