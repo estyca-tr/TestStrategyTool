@@ -39,20 +39,25 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
       
       // Load progress and categories if strategy exists
       if (crossTeamStrategy) {
+        console.log('Loading categories for strategy:', crossTeamStrategy.id)
+        
+        // Load categories separately for better debugging
         try {
-          console.log('Loading categories for strategy:', crossTeamStrategy.id)
-          const [progressData, categoriesData] = await Promise.all([
-            progressAPI.getByStrategy(crossTeamStrategy.id).catch(() => null),
-            breakdownAPI.getAll(crossTeamStrategy.id).catch(err => {
-              console.error('Error loading categories:', err)
-              return []
-            })
-          ])
-          console.log('Loaded categories:', categoriesData)
-          setProgress(progressData)
+          const categoriesData = await breakdownAPI.getAll(crossTeamStrategy.id)
+          console.log('Categories loaded successfully:', categoriesData?.length, 'categories')
+          console.log('Categories data:', JSON.stringify(categoriesData, null, 2).substring(0, 500))
           setCategories(categoriesData || [])
         } catch (e) {
-          console.error('Progress/Categories error:', e)
+          console.error('Error loading categories:', e)
+          setCategories([])
+        }
+        
+        // Load progress
+        try {
+          const progressData = await progressAPI.getByStrategy(crossTeamStrategy.id)
+          setProgress(progressData)
+        } catch (e) {
+          console.log('Progress not available')
         }
       }
     } catch (err) {
