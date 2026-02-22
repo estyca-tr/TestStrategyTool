@@ -749,10 +749,26 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                               <span className="be-category-badge">{subcat.items?.length || 0} items</span>
                             </div>
                             <div className="be-category-actions be-actions-visible" onClick={e => e.stopPropagation()}>
-                              <button className="btn btn-ghost btn-xs be-edit-btn" title="Edit" onClick={() => setEditingCategory({ id: subcat.id, name: subcat.name, type: subcat.type })}>
+                              <button 
+                                className="btn btn-primary btn-xs"
+                                title="Add sub-category"
+                                onClick={() => openAddSubcategory(subcat.id)}
+                              >
+                                <Plus size={14} />
+                                Sub
+                              </button>
+                              <button 
+                                className="btn btn-ghost btn-xs be-edit-btn" 
+                                title="Edit" 
+                                onClick={() => setEditingCategory({ id: subcat.id, name: subcat.name, type: subcat.type })}
+                              >
                                 <Edit2 size={14} />
                               </button>
-                              <button className="btn btn-ghost btn-xs be-delete-btn" title="Delete" onClick={() => handleDeleteCategory(subcat.id, subcat.name)}>
+                              <button 
+                                className="btn btn-ghost btn-xs be-delete-btn" 
+                                title="Delete" 
+                                onClick={() => handleDeleteCategory(subcat.id, subcat.name)}
+                              >
                                 <Trash2 size={14} />
                               </button>
                             </div>
@@ -1326,6 +1342,12 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
         
         .be-subcategory-header:hover {
           background: var(--bg-hover);
+        }
+        
+        .be-subcategory-header .be-category-actions {
+          opacity: 1 !important;
+          display: flex;
+          gap: 4px;
         }
         
         .be-subcategory-content {
