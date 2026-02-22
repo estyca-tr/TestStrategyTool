@@ -42,7 +42,7 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
         try {
           const [progressData, categoriesData] = await Promise.all([
             progressAPI.getByStrategy(crossTeamStrategy.id).catch(() => null),
-            breakdownAPI.getCategories(crossTeamStrategy.id)
+            breakdownAPI.getAll(crossTeamStrategy.id)
           ])
           setProgress(progressData)
           setCategories(categoriesData || [])
