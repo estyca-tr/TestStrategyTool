@@ -59,6 +59,27 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
   useEffect(() => {
     loadCategories()
   }, [strategyId])
+  
+  // Extract teams from existing sub-items and add to custom teams
+  useEffect(() => {
+    const extractedTeams = new Set()
+    categories.forEach(category => {
+      category.items?.forEach(item => {
+        item.sub_items?.forEach(subItem => {
+          // Extract team from title (format: "Team: Description")
+          if (subItem.title.includes(':')) {
+            const team = subItem.title.split(':')[0].trim()
+            if (team && !participantTeams.includes(team)) {
+              extractedTeams.add(team)
+            }
+          }
+        })
+      })
+    })
+    if (extractedTeams.size > 0) {
+      setCustomTeams(prev => [...new Set([...prev, ...extractedTeams])])
+    }
+  }, [categories, participantTeams])
 
   async function loadCategories() {
     try {
@@ -133,6 +154,10 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
       let title = newItem.title
       if (parentItemId && newItem.team) {
         title = `${newItem.team}: ${newItem.title}`
+        // Add team to custom teams list if not already there
+        if (!availableTeams.includes(newItem.team)) {
+          setCustomTeams(prev => [...prev, newItem.team])
+        }
       }
       
       const itemData = {
