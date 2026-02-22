@@ -32,5 +32,10 @@ def get_db():
 
 
 def init_db():
-    from models import Project, Document, TestStrategy, TestPlan
+    # Import ALL models to ensure tables are created
+    from models import (
+        Project, Document, TestStrategy, TestPlan, 
+        Comment, Participant, BreakdownCategory, BreakdownItem,
+        User, Share, Permission
+    )
     Base.metadata.create_all(bind=engine)
