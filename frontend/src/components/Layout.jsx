@@ -223,7 +223,7 @@ function Layout() {
           </div>
           
           <p className="auth-footer">
-            Test Strategy Tool v1.0.1
+            Test Strategy Tool v1.0.2
           </p>
         </div>
         
