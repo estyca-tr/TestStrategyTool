@@ -467,7 +467,8 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                 Team
                               </button>
                               <button 
-                                className="btn btn-ghost btn-xs"
+                                className="btn btn-ghost btn-xs be-edit-btn"
+                                title="Edit"
                                 onClick={() => setEditingItem({ 
                                   id: item.id, 
                                   title: item.title, 
@@ -479,7 +480,8 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                 <Edit2 size={14} />
                               </button>
                               <button 
-                                className="btn btn-ghost btn-xs"
+                                className="btn btn-ghost btn-xs be-delete-btn"
+                                title="Delete"
                                 onClick={() => handleDeleteItem(item.id, item.title)}
                               >
                                 <Trash2 size={14} />
@@ -582,7 +584,8 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                   )}
                                   <div className="be-item-actions be-actions-visible">
                                     <button 
-                                      className="btn btn-ghost btn-xs"
+                                      className="btn btn-ghost btn-xs be-edit-btn"
+                                      title="Edit"
                                       onClick={() => {
                                         // Parse team from title if exists
                                         const parts = subItem.title.split(':')
@@ -600,7 +603,8 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                       <Edit2 size={12} />
                                     </button>
                                     <button 
-                                      className="btn btn-ghost btn-xs"
+                                      className="btn btn-ghost btn-xs be-delete-btn"
+                                      title="Delete"
                                       onClick={() => handleDeleteItem(subItem.id, subItem.title)}
                                     >
                                       <Trash2 size={12} />
@@ -1107,13 +1111,31 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
         
         .be-item-actions {
           display: flex;
-          gap: 2px;
+          gap: 4px;
           opacity: 0;
           transition: opacity 0.2s;
         }
         
         .be-item:hover .be-item-actions {
           opacity: 1;
+        }
+        
+        .be-edit-btn {
+          color: var(--text-secondary) !important;
+        }
+        
+        .be-edit-btn:hover {
+          color: var(--accent-cyan) !important;
+          background: rgba(6, 182, 212, 0.1) !important;
+        }
+        
+        .be-delete-btn {
+          color: var(--text-secondary) !important;
+        }
+        
+        .be-delete-btn:hover {
+          color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.1) !important;
         }
         
         .be-add-item-btn {
