@@ -376,45 +376,7 @@ function StrategyEditor() {
           </div>
         </div>
         
-        {/* Strategy Type Selector - Hidden when project is already Cross-Team */}
-        {!isProjectCrossTeam && (
-          <div className="strategy-type-selector mt-lg">
-            <label className="form-label">Strategy Type *</label>
-            <div className="type-options">
-              <div 
-                className={`type-option ${!formData.is_cross_team ? 'active' : ''}`}
-                onClick={() => handleFieldChange('is_cross_team', false)}
-              >
-                <div className="type-icon">📋</div>
-                <div className="type-content">
-                  <h4>Team / Project Strategy</h4>
-                  <p>אסטרטגיית בדיקות של צוות לפרויקט ספציפי. כולל מסמך עם כל הסעיפים הסטנדרטיים.</p>
-                </div>
-              </div>
-              <div 
-                className={`type-option ${formData.is_cross_team ? 'active' : ''}`}
-                onClick={() => handleFieldChange('is_cross_team', true)}
-              >
-                <div className="type-icon">🌐</div>
-                <div className="type-content">
-                  <h4>Cross-Team E2E Strategy</h4>
-                  <p>אסטרטגיית E2E רוחבית בין צוותים. כולל פירוק בדיקות, הקצאת אחריות ומעקב התקדמות.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Show info badge when project is Cross-Team */}
-        {isProjectCrossTeam && (
-          <div className="cross-team-badge mt-lg">
-            <div className="badge-icon">🌐</div>
-            <div className="badge-content">
-              <strong>Cross-Team E2E Strategy</strong>
-              <span>הפרויקט מוגדר כרוחבי - האסטרטגיה תכלול פירוק בדיקות ומעקב התקדמות</span>
-            </div>
-          </div>
-        )}
+        {/* Strategy type is now determined by the project's is_cross_team setting */}
       </div>
       
       {/* Sections */}
