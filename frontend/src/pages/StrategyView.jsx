@@ -148,6 +148,21 @@ function StrategyView() {
     showToast('success', '✓ Access removed', 'Share has been revoked')
   }
   
+  async function handleToggleCrossTeam() {
+    try {
+      const newValue = !strategy.is_cross_team
+      await strategiesAPI.update(id, { is_cross_team: newValue })
+      setStrategy({ ...strategy, is_cross_team: newValue })
+      showToast('success', newValue ? '🌐 Cross-Team Enabled' : '📋 Team Strategy', 
+        newValue ? 'Test Breakdown and Progress tabs are now available' : 'Strategy is now a team/project strategy')
+      if (newValue) {
+        loadData() // Reload to get participants
+      }
+    } catch (err) {
+      showToast('error', '⚠️ Error', 'Failed to update strategy type')
+    }
+  }
+  
   async function handleCreateShareLink(shareData) {
     const result = await sharesAPI.create(shareData)
     await loadShares()
@@ -763,6 +778,16 @@ function StrategyView() {
                 <span className="info-label">Sections</span>
                 <span>{filledSections.length}/{Object.keys(SECTION_LABELS).length}</span>
               </div>
+              <div className="info-item strategy-type-toggle">
+                <span className="info-label">Strategy Type</span>
+                <button 
+                  className={`type-toggle-btn ${strategy.is_cross_team ? 'active' : ''}`}
+                  onClick={handleToggleCrossTeam}
+                  title={strategy.is_cross_team ? 'Click to change to Team Strategy' : 'Click to enable Cross-Team mode'}
+                >
+                  {strategy.is_cross_team ? '🌐 Cross-Team' : '📋 Team'}
+                </button>
+              </div>
             </div>
           </div>
           
@@ -1049,6 +1074,35 @@ function StrategyView() {
         
         .info-label {
           color: var(--text-muted);
+        }
+        
+        .strategy-type-toggle {
+          margin-top: var(--space-sm);
+          padding-top: var(--space-sm);
+          border-top: 1px solid var(--border-color);
+        }
+        
+        .type-toggle-btn {
+          padding: 4px 10px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          background: var(--bg-secondary);
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .type-toggle-btn:hover {
+          border-color: var(--accent-purple);
+          color: var(--text-primary);
+        }
+        
+        .type-toggle-btn.active {
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+          border-color: var(--accent-blue);
+          color: var(--accent-blue);
         }
         
         .toc {
