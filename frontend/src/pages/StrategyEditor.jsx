@@ -64,10 +64,16 @@ function StrategyEditor() {
       const projectsData = await projectsAPI.getAll()
       setProjects(projectsData)
       
-      // Load documents for the project
+      // Load documents for the project and set is_cross_team
       if (projectId) {
         const docsData = await documentsAPI.getAll({ project_id: projectId })
         setDocuments(docsData)
+        
+        // Set is_cross_team based on the project type (for new strategies)
+        const project = projectsData.find(p => p.id === parseInt(projectId))
+        if (project) {
+          setFormData(prev => ({ ...prev, is_cross_team: project.is_cross_team || false }))
+        }
         
         // If a specific doc was passed, select it
         if (docId) {
@@ -123,11 +129,9 @@ function StrategyEditor() {
   async function handleProjectChange(newProjectId) {
     handleFieldChange('project_id', newProjectId)
     
-    // Auto-set is_cross_team based on project type
+    // Always sync is_cross_team with the project type
     const project = projects.find(p => p.id === parseInt(newProjectId))
-    if (project?.is_cross_team) {
-      handleFieldChange('is_cross_team', true)
-    }
+    handleFieldChange('is_cross_team', project?.is_cross_team || false)
     
     if (newProjectId) {
       const docsData = await documentsAPI.getAll({ project_id: newProjectId })
