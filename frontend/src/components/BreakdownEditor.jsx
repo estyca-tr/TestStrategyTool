@@ -402,15 +402,22 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                 ))}
                               </select>
                             </div>
-                            <div className="be-item-content" onClick={() => toggleItem(item.id)}>
+                            <div className="be-item-content">
                               <span className="be-item-title">{item.title}</span>
                               {item.description && (
                                 <span className="be-item-desc">{item.description}</span>
                               )}
-                              {item.sub_items?.length > 0 && (
-                                <span className="be-sub-items-count">👥 {item.sub_items.length} team responsibilities</span>
-                              )}
                             </div>
+                            {item.sub_items?.length > 0 && (
+                              <button 
+                                className="be-sub-items-toggle"
+                                onClick={(e) => { e.stopPropagation(); toggleItem(item.id); }}
+                                title={expandedItems[item.id] ? "Hide team responsibilities" : "Show team responsibilities"}
+                              >
+                                {expandedItems[item.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                <span className="be-sub-items-count-text">👥 {item.sub_items.length}</span>
+                              </button>
+                            )}
                             {item.assignee_name && (
                               <div className="be-item-assignee">
                                 <div className="be-assignee-avatar">
@@ -1286,6 +1293,40 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
           font-size: 0.7rem;
           color: var(--accent-purple);
           margin-top: 2px;
+        }
+        
+        /* Toggle button for sub-items */
+        .be-sub-items-toggle {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.15));
+          border: 1px solid rgba(139, 92, 246, 0.4);
+          border-radius: 20px;
+          color: var(--accent-purple);
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+          margin-left: auto;
+          margin-right: var(--space-sm);
+        }
+        
+        .be-sub-items-toggle:hover {
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(168, 85, 247, 0.3));
+          border-color: var(--accent-purple);
+          transform: scale(1.05);
+          box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+        
+        .be-sub-items-toggle:active {
+          transform: scale(0.98);
+        }
+        
+        .be-sub-items-count-text {
+          font-size: 0.8rem;
         }
         
         /* Sub-items (team responsibilities) */
