@@ -748,14 +748,11 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                               <span className="be-category-name">{subcat.name}</span>
                               <span className="be-category-badge">{subcat.items?.length || 0} items</span>
                             </div>
-                            <div className="be-category-actions" onClick={e => e.stopPropagation()}>
-                              <button className="btn btn-ghost btn-xs" title="Add sub-category" onClick={() => openAddSubcategory(subcat.id)}>
-                                <Plus size={14} />
-                              </button>
-                              <button className="btn btn-ghost btn-xs" onClick={() => setEditingCategory({ id: subcat.id, name: subcat.name, type: subcat.type })}>
+                            <div className="be-category-actions be-actions-visible" onClick={e => e.stopPropagation()}>
+                              <button className="btn btn-ghost btn-xs be-edit-btn" title="Edit" onClick={() => setEditingCategory({ id: subcat.id, name: subcat.name, type: subcat.type })}>
                                 <Edit2 size={14} />
                               </button>
-                              <button className="btn btn-ghost btn-xs" onClick={() => handleDeleteCategory(subcat.id, subcat.name)}>
+                              <button className="btn btn-ghost btn-xs be-delete-btn" title="Delete" onClick={() => handleDeleteCategory(subcat.id, subcat.name)}>
                                 <Trash2 size={14} />
                               </button>
                             </div>
@@ -779,6 +776,28 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                     </div>
                                   )}
                                   <div className="be-item-priority" style={{ background: PRIORITIES.find(p => p.value === item.priority)?.color }}>{item.priority}</div>
+                                  <div className="be-item-actions be-actions-visible">
+                                    <button 
+                                      className="btn btn-ghost btn-xs be-edit-btn"
+                                      title="Edit"
+                                      onClick={() => setEditingItem({ 
+                                        id: item.id, 
+                                        title: item.title, 
+                                        description: item.description,
+                                        assignee_id: item.assignee_id,
+                                        priority: item.priority 
+                                      })}
+                                    >
+                                      <Edit2 size={14} />
+                                    </button>
+                                    <button 
+                                      className="btn btn-ghost btn-xs be-delete-btn"
+                                      title="Delete"
+                                      onClick={() => handleDeleteItem(item.id, item.title)}
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                               
