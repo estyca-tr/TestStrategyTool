@@ -40,14 +40,19 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
       // Load progress and categories if strategy exists
       if (crossTeamStrategy) {
         try {
+          console.log('Loading categories for strategy:', crossTeamStrategy.id)
           const [progressData, categoriesData] = await Promise.all([
             progressAPI.getByStrategy(crossTeamStrategy.id).catch(() => null),
-            breakdownAPI.getAll(crossTeamStrategy.id)
+            breakdownAPI.getAll(crossTeamStrategy.id).catch(err => {
+              console.error('Error loading categories:', err)
+              return []
+            })
           ])
+          console.log('Loaded categories:', categoriesData)
           setProgress(progressData)
           setCategories(categoriesData || [])
         } catch (e) {
-          console.log('Progress/Categories not available')
+          console.error('Progress/Categories error:', e)
         }
       }
     } catch (err) {
