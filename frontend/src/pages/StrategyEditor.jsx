@@ -115,9 +115,20 @@ function StrategyEditor() {
     }
   }
   
+  // Get the selected project object
+  const selectedProject = projects.find(p => p.id === parseInt(formData.project_id))
+  const isProjectCrossTeam = selectedProject?.is_cross_team || false
+
   // Load docs when project changes
   async function handleProjectChange(newProjectId) {
     handleFieldChange('project_id', newProjectId)
+    
+    // Auto-set is_cross_team based on project type
+    const project = projects.find(p => p.id === parseInt(newProjectId))
+    if (project?.is_cross_team) {
+      handleFieldChange('is_cross_team', true)
+    }
+    
     if (newProjectId) {
       const docsData = await documentsAPI.getAll({ project_id: newProjectId })
       setDocuments(docsData)
@@ -365,32 +376,45 @@ function StrategyEditor() {
           </div>
         </div>
         
-        {/* Strategy Type Selector */}
-        <div className="strategy-type-selector mt-lg">
-          <label className="form-label">Strategy Type *</label>
-          <div className="type-options">
-            <div 
-              className={`type-option ${!formData.is_cross_team ? 'active' : ''}`}
-              onClick={() => handleFieldChange('is_cross_team', false)}
-            >
-              <div className="type-icon">📋</div>
-              <div className="type-content">
-                <h4>Team / Project Strategy</h4>
-                <p>אסטרטגיית בדיקות של צוות לפרויקט ספציפי. כולל מסמך עם כל הסעיפים הסטנדרטיים.</p>
+        {/* Strategy Type Selector - Hidden when project is already Cross-Team */}
+        {!isProjectCrossTeam && (
+          <div className="strategy-type-selector mt-lg">
+            <label className="form-label">Strategy Type *</label>
+            <div className="type-options">
+              <div 
+                className={`type-option ${!formData.is_cross_team ? 'active' : ''}`}
+                onClick={() => handleFieldChange('is_cross_team', false)}
+              >
+                <div className="type-icon">📋</div>
+                <div className="type-content">
+                  <h4>Team / Project Strategy</h4>
+                  <p>אסטרטגיית בדיקות של צוות לפרויקט ספציפי. כולל מסמך עם כל הסעיפים הסטנדרטיים.</p>
+                </div>
               </div>
-            </div>
-            <div 
-              className={`type-option ${formData.is_cross_team ? 'active' : ''}`}
-              onClick={() => handleFieldChange('is_cross_team', true)}
-            >
-              <div className="type-icon">🌐</div>
-              <div className="type-content">
-                <h4>Cross-Team E2E Strategy</h4>
-                <p>אסטרטגיית E2E רוחבית בין צוותים. כולל פירוק בדיקות, הקצאת אחריות ומעקב התקדמות.</p>
+              <div 
+                className={`type-option ${formData.is_cross_team ? 'active' : ''}`}
+                onClick={() => handleFieldChange('is_cross_team', true)}
+              >
+                <div className="type-icon">🌐</div>
+                <div className="type-content">
+                  <h4>Cross-Team E2E Strategy</h4>
+                  <p>אסטרטגיית E2E רוחבית בין צוותים. כולל פירוק בדיקות, הקצאת אחריות ומעקב התקדמות.</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+        
+        {/* Show info badge when project is Cross-Team */}
+        {isProjectCrossTeam && (
+          <div className="cross-team-badge mt-lg">
+            <div className="badge-icon">🌐</div>
+            <div className="badge-content">
+              <strong>Cross-Team E2E Strategy</strong>
+              <span>הפרויקט מוגדר כרוחבי - האסטרטגיה תכלול פירוק בדיקות ומעקב התקדמות</span>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Sections */}
@@ -743,6 +767,37 @@ function StrategyEditor() {
           font-size: 0.85rem;
           color: var(--text-muted);
           line-height: 1.4;
+        }
+        
+        /* Cross-Team Badge (shown instead of selector for cross-team projects) */
+        .cross-team-badge {
+          display: flex;
+          align-items: center;
+          gap: var(--space-md);
+          padding: var(--space-md) var(--space-lg);
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+          border: 1px solid rgba(59, 130, 246, 0.3);
+          border-radius: var(--radius-lg);
+        }
+        
+        .cross-team-badge .badge-icon {
+          font-size: 1.5rem;
+        }
+        
+        .cross-team-badge .badge-content {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        
+        .cross-team-badge .badge-content strong {
+          color: var(--accent-blue);
+          font-size: 0.95rem;
+        }
+        
+        .cross-team-badge .badge-content span {
+          color: var(--text-muted);
+          font-size: 0.8rem;
         }
         
         @media (max-width: 768px) {
