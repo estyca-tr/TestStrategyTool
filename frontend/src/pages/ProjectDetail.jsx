@@ -69,11 +69,6 @@ function ProjectDetail() {
     if (togglingCrossTeam) return
     
     const newValue = !project.is_cross_team
-    const confirmMsg = newValue 
-      ? 'Enable Cross-Team mode? This allows adding participants from multiple teams.'
-      : 'Disable Cross-Team mode? Participant data will be preserved.'
-    
-    if (!confirm(confirmMsg)) return
     
     setTogglingCrossTeam(true)
     try {
