@@ -90,10 +90,21 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
   
   // Extract teams from breakdown sub-items (format: "Team: Description")
   const breakdownTeams = []
-  categories.forEach(category => {
-    category.items?.forEach(item => {
+  
+  // Helper function to extract teams from a category and its children
+  function extractTeamsFromCategory(cat) {
+    // Extract from items in this category
+    cat.items?.forEach(item => {
+      // Check the item title itself (e.g., "trading BE: something")
+      if (item.title?.includes(':')) {
+        const team = item.title.split(':')[0].trim()
+        if (team && !breakdownTeams.includes(team)) {
+          breakdownTeams.push(team)
+        }
+      }
+      // Check sub_items
       item.sub_items?.forEach(subItem => {
-        if (subItem.title.includes(':')) {
+        if (subItem.title?.includes(':')) {
           const team = subItem.title.split(':')[0].trim()
           if (team && !breakdownTeams.includes(team)) {
             breakdownTeams.push(team)
@@ -101,7 +112,11 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
         }
       })
     })
-  })
+    // Recursively check children categories
+    cat.children?.forEach(child => extractTeamsFromCategory(child))
+  }
+  
+  categories.forEach(category => extractTeamsFromCategory(category))
   
   // Combine all unique teams
   const teams = [...new Set([...participantTeams, ...breakdownTeams])]
