@@ -12,6 +12,7 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
   const [strategy, setStrategy] = useState(null)
   const [participants, setParticipants] = useState([])
   const [progress, setProgress] = useState(null)
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState('breakdown') // participants, strategy, breakdown, progress
   const [showAddParticipant, setShowAddParticipant] = useState(false)
@@ -36,13 +37,17 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
       setStrategy(crossTeamStrategy || null)
       setParticipants(participantsData)
       
-      // Load progress if strategy exists
+      // Load progress and categories if strategy exists
       if (crossTeamStrategy) {
         try {
-          const progressData = await progressAPI.getByStrategy(crossTeamStrategy.id)
+          const [progressData, categoriesData] = await Promise.all([
+            progressAPI.getByStrategy(crossTeamStrategy.id).catch(() => null),
+            breakdownAPI.getCategories(crossTeamStrategy.id)
+          ])
           setProgress(progressData)
+          setCategories(categoriesData || [])
         } catch (e) {
-          console.log('Progress not available')
+          console.log('Progress/Categories not available')
         }
       }
     } catch (err) {
@@ -80,8 +85,26 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
-  // Extract unique teams
-  const teams = [...new Set(participants.map(p => p.team).filter(Boolean))]
+  // Extract unique teams from participants
+  const participantTeams = [...new Set(participants.map(p => p.team).filter(Boolean))]
+  
+  // Extract teams from breakdown sub-items (format: "Team: Description")
+  const breakdownTeams = []
+  categories.forEach(category => {
+    category.items?.forEach(item => {
+      item.sub_items?.forEach(subItem => {
+        if (subItem.title.includes(':')) {
+          const team = subItem.title.split(':')[0].trim()
+          if (team && !breakdownTeams.includes(team)) {
+            breakdownTeams.push(team)
+          }
+        }
+      })
+    })
+  })
+  
+  // Combine all unique teams
+  const teams = [...new Set([...participantTeams, ...breakdownTeams])]
 
   if (loading) {
     return <div className="ctd-loading">Loading...</div>
@@ -143,25 +166,44 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
                   </div>
                 ) : (
                   <div className="ctd-teams-list">
-                    {teams.map(team => (
-                      <div key={team} className="ctd-team-row">
-                        <span className="ctd-team-name">🏢 {team}</span>
-                        <div className="ctd-team-members">
-                          {participants.filter(p => p.team === team).map(p => (
-                            <div key={p.id} className="ctd-member" title={`${p.name} - ${p.role || 'No role'}`}>
-                              <span className="ctd-member-avatar">{p.name.charAt(0)}</span>
-                              <span className="ctd-member-name">{p.name}</span>
+                    {teams.map(team => {
+                      const teamParticipants = participants.filter(p => p.team === team)
+                      const isFromBreakdown = breakdownTeams.includes(team) && !participantTeams.includes(team)
+                      
+                      return (
+                        <div key={team} className={`ctd-team-row ${isFromBreakdown ? 'ctd-team-from-breakdown' : ''}`}>
+                          <span className="ctd-team-name">
+                            {isFromBreakdown ? '📋' : '🏢'} {team}
+                            {isFromBreakdown && <span className="ctd-team-badge">From Tests</span>}
+                          </span>
+                          <div className="ctd-team-members">
+                            {teamParticipants.map(p => (
+                              <div key={p.id} className="ctd-member" title={`${p.name} - ${p.role || 'No role'}`}>
+                                <span className="ctd-member-avatar">{p.name.charAt(0)}</span>
+                                <span className="ctd-member-name">{p.name}</span>
+                                <button 
+                                  className="ctd-member-delete"
+                                  onClick={() => handleDeleteParticipant(p.id, p.name)}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                            {isFromBreakdown && teamParticipants.length === 0 && (
                               <button 
-                                className="ctd-member-delete"
-                                onClick={() => handleDeleteParticipant(p.id, p.name)}
+                                className="btn btn-ghost btn-xs ctd-add-member-btn"
+                                onClick={() => {
+                                  setNewParticipant({ name: '', team: team, role: '' })
+                                  setShowAddParticipant(true)
+                                }}
                               >
-                                ×
+                                <Plus size={12} /> Add member
                               </button>
-                            </div>
-                          ))}
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
                 
@@ -419,8 +461,33 @@ function CrossTeamDashboard({ projectId, onUpdate }) {
           font-size: 0.75rem;
           font-weight: 600;
           color: var(--accent-cyan);
-          display: block;
+          display: flex;
+          align-items: center;
+          gap: 6px;
           margin-bottom: 4px;
+        }
+        
+        .ctd-team-badge {
+          font-size: 0.6rem;
+          background: var(--accent-purple);
+          color: white;
+          padding: 1px 5px;
+          border-radius: var(--radius-sm);
+          font-weight: 500;
+        }
+        
+        .ctd-team-from-breakdown {
+          background: rgba(139, 92, 246, 0.1);
+          border-color: var(--accent-purple);
+        }
+        
+        .ctd-add-member-btn {
+          font-size: 0.65rem;
+          opacity: 0.7;
+        }
+        
+        .ctd-add-member-btn:hover {
+          opacity: 1;
         }
         
         .ctd-team-members {
