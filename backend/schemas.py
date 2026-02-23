@@ -255,6 +255,8 @@ class BreakdownItemBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=300)
     description: Optional[str] = None
     priority: str = Field(default="medium", pattern="^(low|medium|high)$")
+    eta: Optional[datetime] = None  # Estimated completion date
+    duration_days: Optional[int] = None  # Estimated duration in days
 
 
 class BreakdownItemCreate(BreakdownItemBase):
@@ -271,6 +273,8 @@ class BreakdownItemUpdate(BaseModel):
     assignee_id: Optional[int] = None
     status: Optional[str] = Field(None, pattern="^(not_started|in_progress|completed|blocked)$")
     priority: Optional[str] = Field(None, pattern="^(low|medium|high)$")
+    eta: Optional[datetime] = None
+    duration_days: Optional[int] = None
     order_index: Optional[int] = None
 
 
@@ -283,6 +287,8 @@ class BreakdownItemResponse(BreakdownItemBase):
     assignee_team: Optional[str] = None
     status: str
     priority: str
+    eta: Optional[datetime] = None
+    duration_days: Optional[int] = None
     order_index: int
     created_at: datetime
     updated_at: datetime

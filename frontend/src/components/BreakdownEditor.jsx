@@ -35,7 +35,7 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
   const [editingCategory, setEditingCategory] = useState(null)
   const [addingItemTo, setAddingItemTo] = useState(null)
   const [addingSubItemTo, setAddingSubItemTo] = useState(null)  // For sub-items under an item
-  const [newItem, setNewItem] = useState({ title: '', description: '', assignee_id: null, priority: 'medium', parent_item_id: null, team: '' })
+  const [newItem, setNewItem] = useState({ title: '', description: '', assignee_id: null, priority: 'medium', parent_item_id: null, team: '', eta: '', duration_days: '' })
   const [editingItem, setEditingItem] = useState(null)
   const [expandedItems, setExpandedItems] = useState({})  // Track expanded items for sub-items
   const [editingSubItem, setEditingSubItem] = useState(null)  // For editing sub-items
@@ -165,12 +165,14 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
         description: newItem.description,
         assignee_id: newItem.assignee_id,
         priority: newItem.priority,
-        parent_item_id: parentItemId
+        parent_item_id: parentItemId,
+        eta: newItem.eta || null,
+        duration_days: newItem.duration_days ? parseInt(newItem.duration_days) : null
       }
       await breakdownAPI.createItem(categoryId, itemData)
       setAddingItemTo(null)
       setAddingSubItemTo(null)
-      setNewItem({ title: '', description: '', assignee_id: null, priority: 'medium', parent_item_id: null, team: '' })
+      setNewItem({ title: '', description: '', assignee_id: null, priority: 'medium', parent_item_id: null, team: '', eta: '', duration_days: '' })
       loadCategories()
       onUpdate?.()
     } catch (err) {
@@ -457,6 +459,16 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                             >
                               {item.priority}
                             </div>
+                            {item.eta && (
+                              <div className="be-item-eta" title="ETA">
+                                📅 {new Date(item.eta).toLocaleDateString('he-IL')}
+                              </div>
+                            )}
+                            {item.duration_days && (
+                              <div className="be-item-duration" title="Duration">
+                                ⏱️ {item.duration_days}d
+                              </div>
+                            )}
                             <div className="be-item-actions be-actions-visible">
                               <button 
                                 className="btn btn-primary btn-xs"
@@ -739,6 +751,29 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                             <option key={p.value} value={p.value}>{p.label} Priority</option>
                           ))}
                         </select>
+                      </div>
+                      <div className="be-add-item-row be-eta-row">
+                        <div className="be-eta-field">
+                          <label className="be-eta-label">📅 ETA</label>
+                          <input
+                            type="date"
+                            value={newItem.eta || ''}
+                            onChange={e => setNewItem({ ...newItem, eta: e.target.value })}
+                            className="form-input form-input-sm"
+                          />
+                        </div>
+                        <div className="be-eta-field">
+                          <label className="be-eta-label">⏱️ Days</label>
+                          <input
+                            type="number"
+                            value={newItem.duration_days || ''}
+                            onChange={e => setNewItem({ ...newItem, duration_days: e.target.value })}
+                            className="form-input form-input-sm"
+                            placeholder="Days"
+                            min="1"
+                            style={{ width: '80px' }}
+                          />
+                        </div>
                         <button className="btn btn-ghost" onClick={() => setAddingItemTo(null)}>
                           Cancel
                         </button>
@@ -813,6 +848,16 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                     </div>
                                   )}
                                   <div className="be-item-priority" style={{ background: PRIORITIES.find(p => p.value === item.priority)?.color }}>{item.priority}</div>
+                                  {item.eta && (
+                                    <div className="be-item-eta" title="ETA">
+                                      📅 {new Date(item.eta).toLocaleDateString('he-IL')}
+                                    </div>
+                                  )}
+                                  {item.duration_days && (
+                                    <div className="be-item-duration" title="Duration">
+                                      ⏱️ {item.duration_days}d
+                                    </div>
+                                  )}
                                   <div className="be-item-actions be-actions-visible">
                                     <button 
                                       className="btn btn-ghost btn-xs be-edit-btn"
@@ -822,7 +867,9 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                                         title: item.title, 
                                         description: item.description,
                                         assignee_id: item.assignee_id,
-                                        priority: item.priority 
+                                        priority: item.priority,
+                                        eta: item.eta ? item.eta.split('T')[0] : '',
+                                        duration_days: item.duration_days || '' 
                                       })}
                                     >
                                       <Edit2 size={14} />
@@ -1163,6 +1210,31 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
           border-radius: 4px;
           text-transform: uppercase;
           font-weight: 600;
+        }
+        
+        .be-item-eta,
+        .be-item-duration {
+          font-size: 0.75rem;
+          color: var(--text-secondary);
+          background: var(--bg-tertiary);
+          padding: 2px 8px;
+          border-radius: 4px;
+        }
+        
+        .be-eta-row {
+          align-items: center;
+        }
+        
+        .be-eta-field {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        
+        .be-eta-label {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          white-space: nowrap;
         }
         
         .be-item-actions {

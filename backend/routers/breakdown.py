@@ -34,6 +34,8 @@ def build_item_response(item, all_items):
         assignee_team=item.assignee.team if item.assignee else None,
         status=item.status,
         priority=item.priority,
+        eta=item.eta,
+        duration_days=item.duration_days,
         order_index=item.order_index,
         created_at=item.created_at,
         updated_at=item.updated_at,

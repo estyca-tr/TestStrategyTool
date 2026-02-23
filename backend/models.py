@@ -206,6 +206,8 @@ class BreakdownItem(Base):
     assignee_id = Column(Integer, ForeignKey("participants.id"), nullable=True)
     status = Column(String(20), default="not_started")  # not_started, in_progress, completed, blocked
     priority = Column(String(10), default="medium")  # low, medium, high
+    eta = Column(DateTime, nullable=True)  # Estimated completion date
+    duration_days = Column(Integer, nullable=True)  # Estimated duration in days
     order_index = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -288,6 +290,38 @@ class Share(Base):
     shared_with = relationship("User", back_populates="shares_received", foreign_keys=[shared_with_id])
     project = relationship("Project", back_populates="shares")
     strategy = relationship("TestStrategy", back_populates="shares")
+
+
+# ============== Quick Notes ==============
+
+class NoteCategory(enum.Enum):
+    GENERAL = "general"
+    LINK = "link"
+    CREDENTIALS = "credentials"
+    CONTACT = "contact"
+    REFERENCE = "reference"
+
+
+class QuickNote(Base):
+    """Quick notes for storing important information"""
+    __tablename__ = "quick_notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String(200), nullable=False)
+    content = Column(Text)
+    category = Column(String(50), default="general")  # general, link, credentials, contact, reference
+    is_pinned = Column(Boolean, default=False)
+    color = Column(String(20), default="#3b82f6")  # For visual organization
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", back_populates="notes")
+
+
+# Add notes relationship to User
+User.notes = relationship("QuickNote", back_populates="user", cascade="all, delete-orphan")
 
 
 # Add owner_id to Project
