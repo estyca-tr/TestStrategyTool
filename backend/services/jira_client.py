@@ -166,11 +166,13 @@ class JiraClient:
             jql_parts.append(f'issuetype = "{issue_type}"')
         
         if query:
-            # Search in summary with partial match
-            jql_parts.append(f'summary ~ "{query}*"')
+            # Search in summary with contains match (~ does partial match in JQL)
+            jql_parts.append(f'summary ~ "{query}"')
         
         jql = " AND ".join(jql_parts)
         jql += " ORDER BY updated DESC"
+        
+        print(f"Jira search JQL: {jql}")
         
         params = {
             "jql": jql,
