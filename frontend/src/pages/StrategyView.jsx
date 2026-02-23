@@ -876,16 +876,18 @@ function StrategyView() {
                   // Extract clean issue key (handles case where full URL was saved)
                   const cleanKey = extractJiraIssueKey(plan.jira_issue_key || '');
                   const jiraUrl = `https://etorogroup.atlassian.net/browse/${cleanKey}`;
+                  console.log('Jira link debug:', { original: plan.jira_issue_key, cleanKey, jiraUrl });
                   return (
                   <div key={plan.id} className="linked-plan-item">
                     <div className="linked-plan-info">
-                      <button 
-                        type="button"
+                      <a 
+                        href={jiraUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="linked-plan-link"
-                        onClick={() => window.open(jiraUrl, '_blank')}
                       >
                         🎫 {cleanKey} ↗️
-                      </button>
+                      </a>
                       {plan.title && !plan.title.startsWith('Jira:') && (
                         <span className="linked-plan-title">{plan.title}</span>
                       )}
@@ -1748,13 +1750,14 @@ function StrategyView() {
             {jiraIssueKey && (
               <div className="preview-box">
                 <span className="preview-label">Will link to:</span>
-                <button 
-                  type="button"
+                <a 
+                  href={`https://etorogroup.atlassian.net/browse/${extractJiraIssueKey(jiraIssueKey)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="preview-value link-button"
-                  onClick={() => window.open(`https://etorogroup.atlassian.net/browse/${jiraIssueKey}`, '_blank')}
                 >
-                  🔗 {jiraIssueKey} ↗️
-                </button>
+                  🔗 {extractJiraIssueKey(jiraIssueKey)} ↗️
+                </a>
               </div>
             )}
             
