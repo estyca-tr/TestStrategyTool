@@ -176,12 +176,13 @@ export const testPlansAPI = {
     method: 'DELETE'
   }),
   
-  linkJira: (strategyId, jiraIssueKey, jiraIssueUrl = null) => {
+  linkJira: (strategyId, jiraIssueKey, jiraIssueUrl = null, title = null) => {
     const params = new URLSearchParams({
       strategy_id: strategyId,
       jira_issue_key: jiraIssueKey
     })
     if (jiraIssueUrl) params.append('jira_issue_url', jiraIssueUrl)
+    if (title) params.append('title', title)
     return fetchAPI(`/test-plans/link-jira?${params}`, {
       method: 'POST'
     })

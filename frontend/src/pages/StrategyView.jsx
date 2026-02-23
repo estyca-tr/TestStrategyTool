@@ -42,6 +42,7 @@ function StrategyView() {
   const [confirmModal, setConfirmModal] = useState(null)
   const [showJiraModal, setShowJiraModal] = useState(false)
   const [jiraIssueKey, setJiraIssueKey] = useState('')
+  const [jiraTitle, setJiraTitle] = useState('')
   const [isLinkingJira, setIsLinkingJira] = useState(false)
   const [linkedTestPlans, setLinkedTestPlans] = useState([])
   const [project, setProject] = useState(null)
@@ -279,10 +280,11 @@ function StrategyView() {
     setIsLinkingJira(true)
     
     try {
-      const result = await testPlansAPI.linkJira(id, jiraIssueKey.trim())
+      const result = await testPlansAPI.linkJira(id, jiraIssueKey.trim(), null, jiraTitle.trim() || null)
       
       setShowJiraModal(false)
       setJiraIssueKey('')
+      setJiraTitle('')
       
       // Refresh linked test plans
       loadLinkedTestPlans()
@@ -851,14 +853,19 @@ function StrategyView() {
               <div className="linked-plans-list">
                 {linkedTestPlans.map(plan => (
                   <div key={plan.id} className="linked-plan-item">
-                    <a 
-                      href={plan.jira_issue_url || `https://etorogroup.atlassian.net/browse/${plan.jira_issue_key}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="linked-plan-link"
-                    >
-                      🎫 {plan.jira_issue_key}
-                    </a>
+                    <div className="linked-plan-info">
+                      <a 
+                        href={plan.jira_issue_url || `https://etorogroup.atlassian.net/browse/${plan.jira_issue_key}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="linked-plan-link"
+                      >
+                        🎫 {plan.jira_issue_key}
+                      </a>
+                      {plan.title && !plan.title.startsWith('Jira:') && (
+                        <span className="linked-plan-title">{plan.title}</span>
+                      )}
+                    </div>
                     <button 
                       className="btn btn-ghost btn-xs be-delete-btn"
                       onClick={() => handleUnlinkTestPlan(plan.id)}
@@ -1154,6 +1161,22 @@ function StrategyView() {
         
         .linked-plan-link:hover {
           text-decoration: underline;
+        }
+        
+        .linked-plan-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          flex: 1;
+          overflow: hidden;
+        }
+        
+        .linked-plan-title {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         
         .strategy-type-toggle {
@@ -1663,6 +1686,18 @@ function StrategyView() {
               <span className="form-hint">Enter the Jira issue key you want to link (e.g., QARD-12345)</span>
             </div>
             
+            <div className="form-group">
+              <label className="form-label">Title (Optional)</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g., E2E Tests - Open Position Flow"
+                value={jiraTitle}
+                onChange={(e) => setJiraTitle(e.target.value)}
+              />
+              <span className="form-hint">Give this test plan a descriptive name</span>
+            </div>
+            
             {jiraIssueKey && (
               <div className="preview-box">
                 <span className="preview-label">Will link to:</span>
@@ -1683,6 +1718,7 @@ function StrategyView() {
                 onClick={() => {
                   setShowJiraModal(false)
                   setJiraIssueKey('')
+                  setJiraTitle('')
                 }}
                 disabled={isLinkingJira}
               >

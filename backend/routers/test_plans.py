@@ -158,6 +158,7 @@ def link_jira_test_plan(
     strategy_id: int,
     jira_issue_key: str,
     jira_issue_url: str = None,
+    title: str = None,
     db: Session = Depends(get_db)
 ):
     """Link an existing Jira issue to a strategy as a test plan"""
@@ -178,11 +179,14 @@ def link_jira_test_plan(
     # Extract project key from issue key (e.g., QARD-123 -> QARD)
     jira_project_key = jira_issue_key.split('-')[0] if '-' in jira_issue_key else None
     
+    # Use provided title or default to "Jira: {key}"
+    plan_title = title if title else f"Jira: {jira_issue_key}"
+    
     # Create the link
     db_plan = TestPlan(
         strategy_id=strategy_id,
         project_id=strategy.project_id,
-        title=f"Jira: {jira_issue_key}",
+        title=plan_title,
         jira_issue_key=jira_issue_key,
         jira_issue_url=jira_issue_url or f"https://etorogroup.atlassian.net/browse/{jira_issue_key}",
         jira_project_key=jira_project_key,
