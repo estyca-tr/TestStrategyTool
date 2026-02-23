@@ -344,10 +344,17 @@ function StrategyView() {
     setIsSearchingJira(true)
     try {
       const results = await testPlansAPI.searchJira(jiraSearchQuery, 'QARD', 'Test Plan', 10)
-      setJiraSearchResults(results)
+      console.log('Jira search results:', results)
+      if (results && results.length > 0) {
+        setJiraSearchResults(results)
+      } else {
+        setJiraSearchResults([])
+        showToast('info', '🔍 No Results', `No Test Plans found matching "${jiraSearchQuery}"`)
+      }
     } catch (err) {
       console.error('Jira search error:', err)
       setJiraSearchResults([])
+      showToast('error', '❌ Search Failed', err.message || 'Could not search Jira. Please check if JIRA_API_TOKEN is configured.')
     } finally {
       setIsSearchingJira(false)
     }
