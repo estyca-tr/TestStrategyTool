@@ -271,16 +271,37 @@ function StrategyView() {
     }
   }
   
+  // Helper function to extract issue key from URL or return as-is if already a key
+  function extractJiraIssueKey(input) {
+    const trimmed = input.trim().toUpperCase()
+    
+    // If it looks like a URL, extract the issue key
+    if (trimmed.includes('/BROWSE/')) {
+      const match = trimmed.match(/\/BROWSE\/([A-Z]+-\d+)/i)
+      if (match) return match[1].toUpperCase()
+    }
+    
+    // If it looks like an issue key pattern (e.g., QARD-123)
+    const keyMatch = trimmed.match(/^([A-Z]+-\d+)$/i)
+    if (keyMatch) return keyMatch[1].toUpperCase()
+    
+    // Return as-is if no pattern matched
+    return trimmed
+  }
+  
   async function handleLinkJiraTestPlan() {
     if (!jiraIssueKey.trim()) {
       showToast('error', '⚠️ Missing Issue Key', 'Please enter a Jira issue key (e.g., QARD-123)')
       return
     }
     
+    // Extract the issue key if user pasted a full URL
+    const cleanIssueKey = extractJiraIssueKey(jiraIssueKey)
+    
     setIsLinkingJira(true)
     
     try {
-      const result = await testPlansAPI.linkJira(id, jiraIssueKey.trim(), null, jiraTitle.trim() || null)
+      const result = await testPlansAPI.linkJira(id, cleanIssueKey, null, jiraTitle.trim() || null)
       
       setShowJiraModal(false)
       setJiraIssueKey('')
