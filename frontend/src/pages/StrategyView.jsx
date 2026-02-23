@@ -310,11 +310,15 @@ function StrategyView() {
       // Refresh linked test plans
       loadLinkedTestPlans()
       
+      // Use clean URL instead of backend's potentially malformed URL
+      const cleanKey = extractJiraIssueKey(result.jira_issue_key || cleanIssueKey)
+      const cleanUrl = `https://etorogroup.atlassian.net/browse/${cleanKey}`
+      
       showToast(
         'success',
         '🔗 Test Plan Linked!',
-        `Linked "${result.jira_issue_key}" to this strategy`,
-        { label: 'Open in Jira', url: result.issue_url }
+        `Linked "${cleanKey}" to this strategy`,
+        { label: 'Open in Jira', url: cleanUrl }
       )
     } catch (err) {
       showToast(
