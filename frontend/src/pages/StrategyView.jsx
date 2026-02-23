@@ -873,8 +873,9 @@ function StrategyView() {
             ) : (
               <div className="linked-plans-list">
                 {linkedTestPlans.map(plan => {
-                  // Always construct the URL from the issue key to avoid double-URL issues
-                  const jiraUrl = `https://etorogroup.atlassian.net/browse/${plan.jira_issue_key}`;
+                  // Extract clean issue key (handles case where full URL was saved)
+                  const cleanKey = extractJiraIssueKey(plan.jira_issue_key || '');
+                  const jiraUrl = `https://etorogroup.atlassian.net/browse/${cleanKey}`;
                   return (
                   <div key={plan.id} className="linked-plan-item">
                     <div className="linked-plan-info">
@@ -883,7 +884,7 @@ function StrategyView() {
                         className="linked-plan-link"
                         onClick={() => window.open(jiraUrl, '_blank')}
                       >
-                        🎫 {plan.jira_issue_key} ↗️
+                        🎫 {cleanKey} ↗️
                       </button>
                       {plan.title && !plan.title.startsWith('Jira:') && (
                         <span className="linked-plan-title">{plan.title}</span>
