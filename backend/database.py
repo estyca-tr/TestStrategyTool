@@ -52,6 +52,9 @@ def run_migrations():
         # Add eta and duration_days to breakdown_items
         ("breakdown_items", "eta", "ALTER TABLE breakdown_items ADD COLUMN eta TIMESTAMP NULL"),
         ("breakdown_items", "duration_days", "ALTER TABLE breakdown_items ADD COLUMN duration_days INTEGER NULL"),
+        # Add eta and duration_days to breakdown_categories
+        ("breakdown_categories", "eta", "ALTER TABLE breakdown_categories ADD COLUMN eta TIMESTAMP NULL"),
+        ("breakdown_categories", "duration_days", "ALTER TABLE breakdown_categories ADD COLUMN duration_days INTEGER NULL"),
     ]
     
     with engine.connect() as conn:

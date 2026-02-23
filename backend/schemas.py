@@ -241,12 +241,16 @@ class BreakdownCategoryCreate(BreakdownCategoryBase):
     # strategy_id comes from URL path parameter
     parent_id: Optional[int] = None  # For nested categories
     order_index: Optional[int] = 0
+    eta: Optional[datetime] = None
+    duration_days: Optional[int] = None
 
 
 class BreakdownCategoryUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     type: Optional[str] = Field(None, pattern="^(team|feature|environment)$")
     order_index: Optional[int] = None
+    eta: Optional[datetime] = None
+    duration_days: Optional[int] = None
 
 
 # ============== Breakdown Item Schemas (Cross-Team) ==============
@@ -307,6 +311,8 @@ class BreakdownCategoryResponse(BreakdownCategoryBase):
     strategy_id: int
     parent_id: Optional[int] = None
     order_index: int
+    eta: Optional[datetime] = None
+    duration_days: Optional[int] = None
     created_at: datetime
     items: List[BreakdownItemResponse] = []
     children: List['BreakdownCategoryResponse'] = []  # Nested sub-categories

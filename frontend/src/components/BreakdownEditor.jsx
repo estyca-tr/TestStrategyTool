@@ -31,7 +31,7 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
   const [loading, setLoading] = useState(true)
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [addingSubcategoryTo, setAddingSubcategoryTo] = useState(null)  // parent_id for subcategory
-  const [newCategory, setNewCategory] = useState({ name: '', type: 'feature', description: '', parent_id: null })
+  const [newCategory, setNewCategory] = useState({ name: '', type: 'feature', description: '', parent_id: null, eta: '', duration_days: '' })
   const [editingCategory, setEditingCategory] = useState(null)
   const [addingItemTo, setAddingItemTo] = useState(null)
   const [addingSubItemTo, setAddingSubItemTo] = useState(null)  // For sub-items under an item
@@ -103,12 +103,14 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
       const categoryData = {
         name: newCategory.name,
         type: newCategory.type,
-        parent_id: addingSubcategoryTo || null
+        parent_id: addingSubcategoryTo || null,
+        eta: newCategory.eta ? new Date(newCategory.eta).toISOString() : null,
+        duration_days: newCategory.duration_days ? parseInt(newCategory.duration_days) : null
       }
       await breakdownAPI.createCategory(strategyId, categoryData)
       setShowAddCategory(false)
       setAddingSubcategoryTo(null)
-      setNewCategory({ name: '', type: 'feature', description: '', parent_id: null })
+      setNewCategory({ name: '', type: 'feature', description: '', parent_id: null, eta: '', duration_days: '' })
       loadCategories()
       onUpdate?.()
     } catch (err) {
@@ -166,7 +168,7 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
         assignee_id: newItem.assignee_id,
         priority: newItem.priority,
         parent_item_id: parentItemId,
-        eta: newItem.eta || null,
+        eta: newItem.eta ? new Date(newItem.eta).toISOString() : null,
         duration_days: newItem.duration_days ? parseInt(newItem.duration_days) : null
       }
       await breakdownAPI.createItem(categoryId, itemData)
@@ -323,6 +325,16 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                       <span className="be-category-badge">{category.items?.length || 0} items</span>
                       {category.children?.length > 0 && (
                         <span className="be-category-badge be-subcategory-badge">{category.children.length} sub</span>
+                      )}
+                      {category.eta && (
+                        <span className="be-eta-badge" title="ETA">
+                          📅 {new Date(category.eta).toLocaleDateString('he-IL')}
+                        </span>
+                      )}
+                      {category.duration_days && (
+                        <span className="be-duration-badge" title="Duration">
+                          ⏱️ {category.duration_days}d
+                        </span>
                       )}
                     </>
                   )}
@@ -803,6 +815,16 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                               <span className="be-category-type-icon">{CATEGORY_TYPES.find(t => t.value === subcat.type)?.icon}</span>
                               <span className="be-category-name">{subcat.name}</span>
                               <span className="be-category-badge">{subcat.items?.length || 0} items</span>
+                              {subcat.eta && (
+                                <span className="be-eta-badge" title="ETA">
+                                  📅 {new Date(subcat.eta).toLocaleDateString('he-IL')}
+                                </span>
+                              )}
+                              {subcat.duration_days && (
+                                <span className="be-duration-badge" title="Duration">
+                                  ⏱️ {subcat.duration_days}d
+                                </span>
+                              )}
                             </div>
                             <div className="be-category-actions be-actions-visible" onClick={e => e.stopPropagation()}>
                               <button 
@@ -989,6 +1011,34 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
                   placeholder="Brief description of this test category..."
                 />
               </div>
+              
+              {/* ETA and Duration Row */}
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    📅 ETA
+                  </label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={newCategory.eta}
+                    onChange={e => setNewCategory({ ...newCategory, eta: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    ⏱️ Days
+                  </label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    min="0"
+                    value={newCategory.duration_days}
+                    onChange={e => setNewCategory({ ...newCategory, duration_days: e.target.value })}
+                    placeholder="Days"
+                  />
+                </div>
+              </div>
             </div>
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setShowAddCategory(false)}>
@@ -1097,6 +1147,28 @@ function BreakdownEditor({ strategyId, participants = [], onUpdate }) {
           padding: 2px 8px;
           border-radius: 10px;
           color: var(--text-muted);
+        }
+        
+        .be-eta-badge {
+          font-size: 0.7rem;
+          background: rgba(59, 130, 246, 0.2);
+          color: #3b82f6;
+          padding: 2px 8px;
+          border-radius: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+        
+        .be-duration-badge {
+          font-size: 0.7rem;
+          background: rgba(168, 85, 247, 0.2);
+          color: #a855f7;
+          padding: 2px 8px;
+          border-radius: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
         }
         
         .be-category-actions {

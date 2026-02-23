@@ -184,6 +184,8 @@ class BreakdownCategory(Base):
     parent_id = Column(Integer, ForeignKey("breakdown_categories.id"), nullable=True)  # For nested categories
     name = Column(String(200), nullable=False)
     type = Column(String(20), nullable=False)  # 'team', 'feature', 'environment'
+    eta = Column(DateTime, nullable=True)  # Estimated completion date for this category
+    duration_days = Column(Integer, nullable=True)  # Estimated duration in days
     order_index = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
