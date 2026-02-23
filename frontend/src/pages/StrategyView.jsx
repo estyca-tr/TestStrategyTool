@@ -851,13 +851,16 @@ function StrategyView() {
               <p className="text-muted text-sm">No linked issues yet</p>
             ) : (
               <div className="linked-plans-list">
-                {linkedTestPlans.map(plan => (
+                {linkedTestPlans.map(plan => {
+                  // Always construct the URL from the issue key to avoid double-URL issues
+                  const jiraUrl = `https://etorogroup.atlassian.net/browse/${plan.jira_issue_key}`;
+                  return (
                   <div key={plan.id} className="linked-plan-item">
                     <div className="linked-plan-info">
                       <button 
                         type="button"
                         className="linked-plan-link"
-                        onClick={() => window.open(plan.jira_issue_url || `https://etorogroup.atlassian.net/browse/${plan.jira_issue_key}`, '_blank')}
+                        onClick={() => window.open(jiraUrl, '_blank')}
                       >
                         🎫 {plan.jira_issue_key} ↗️
                       </button>
@@ -873,7 +876,8 @@ function StrategyView() {
                       <X size={12} />
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
