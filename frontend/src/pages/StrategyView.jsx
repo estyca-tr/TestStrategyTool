@@ -854,14 +854,13 @@ function StrategyView() {
                 {linkedTestPlans.map(plan => (
                   <div key={plan.id} className="linked-plan-item">
                     <div className="linked-plan-info">
-                      <a 
-                        href={plan.jira_issue_url || `https://etorogroup.atlassian.net/browse/${plan.jira_issue_key}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button 
+                        type="button"
                         className="linked-plan-link"
+                        onClick={() => window.open(plan.jira_issue_url || `https://etorogroup.atlassian.net/browse/${plan.jira_issue_key}`, '_blank')}
                       >
-                        🎫 {plan.jira_issue_key}
-                      </a>
+                        🎫 {plan.jira_issue_key} ↗️
+                      </button>
                       {plan.title && !plan.title.startsWith('Jira:') && (
                         <span className="linked-plan-title">{plan.title}</span>
                       )}
@@ -1159,7 +1158,29 @@ function StrategyView() {
           font-weight: 500;
         }
         
+        .linked-plan-link {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+          font-family: inherit;
+        }
+        
         .linked-plan-link:hover {
+          text-decoration: underline;
+        }
+        
+        .link-button {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+          font-family: inherit;
+          color: var(--accent-cyan);
+          font-size: 1rem;
+        }
+        
+        .link-button:hover {
           text-decoration: underline;
         }
         
@@ -1701,14 +1722,13 @@ function StrategyView() {
             {jiraIssueKey && (
               <div className="preview-box">
                 <span className="preview-label">Will link to:</span>
-                <a 
-                  href={`https://etorogroup.atlassian.net/browse/${jiraIssueKey}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="preview-value link"
+                <button 
+                  type="button"
+                  className="preview-value link-button"
+                  onClick={() => window.open(`https://etorogroup.atlassian.net/browse/${jiraIssueKey}`, '_blank')}
                 >
-                  🔗 {jiraIssueKey}
-                </a>
+                  🔗 {jiraIssueKey} ↗️
+                </button>
               </div>
             )}
             
