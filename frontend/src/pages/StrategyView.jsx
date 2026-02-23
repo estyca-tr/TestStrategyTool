@@ -45,6 +45,9 @@ function StrategyView() {
   const [jiraTitle, setJiraTitle] = useState('')
   const [isLinkingJira, setIsLinkingJira] = useState(false)
   const [linkedTestPlans, setLinkedTestPlans] = useState([])
+  const [jiraSearchQuery, setJiraSearchQuery] = useState('')
+  const [jiraSearchResults, setJiraSearchResults] = useState([])
+  const [isSearchingJira, setIsSearchingJira] = useState(false)
   const [project, setProject] = useState(null)
   const [participants, setParticipants] = useState([])
   const [activeTab, setActiveTab] = useState('content') // content, breakdown, progress
@@ -329,6 +332,32 @@ function StrategyView() {
     } finally {
       setIsLinkingJira(false)
     }
+  }
+  
+  // Search Jira issues
+  async function handleSearchJira() {
+    if (!jiraSearchQuery.trim()) {
+      setJiraSearchResults([])
+      return
+    }
+    
+    setIsSearchingJira(true)
+    try {
+      const results = await testPlansAPI.searchJira(jiraSearchQuery, 'QARD', 'Test Plan', 10)
+      setJiraSearchResults(results)
+    } catch (err) {
+      console.error('Jira search error:', err)
+      setJiraSearchResults([])
+    } finally {
+      setIsSearchingJira(false)
+    }
+  }
+  
+  function selectJiraResult(issue) {
+    setJiraIssueKey(issue.key)
+    setJiraTitle(issue.summary)
+    setJiraSearchResults([])
+    setJiraSearchQuery('')
   }
   
   async function loadLinkedTestPlans() {
@@ -1724,7 +1753,50 @@ function StrategyView() {
               <div className="jira-icon">🔗</div>
               <h3>Link Jira Test Plan</h3>
             </div>
-            <p>Link an existing Jira issue to this strategy.</p>
+            <p>Search for a Test Plan or enter the issue key directly.</p>
+            
+            {/* Search Section */}
+            <div className="form-group">
+              <label className="form-label">🔍 Search Test Plans</label>
+              <div className="search-input-wrapper">
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Type to search by name..."
+                  value={jiraSearchQuery}
+                  onChange={(e) => setJiraSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchJira()}
+                />
+                <button 
+                  className="btn btn-sm btn-ghost search-btn"
+                  onClick={handleSearchJira}
+                  disabled={isSearchingJira}
+                >
+                  {isSearchingJira ? '...' : 'Search'}
+                </button>
+              </div>
+              
+              {/* Search Results */}
+              {jiraSearchResults.length > 0 && (
+                <div className="jira-search-results">
+                  {jiraSearchResults.map(issue => (
+                    <div 
+                      key={issue.key} 
+                      className="jira-result-item"
+                      onClick={() => selectJiraResult(issue)}
+                    >
+                      <span className="jira-result-key">{issue.key}</span>
+                      <span className="jira-result-summary">{issue.summary}</span>
+                      <span className="jira-result-status">{issue.status}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="form-divider">
+              <span>or enter manually</span>
+            </div>
             
             <div className="form-group">
               <label className="form-label">Jira Issue Key *</label>
@@ -1734,9 +1806,8 @@ function StrategyView() {
                 placeholder="e.g., QARD-123"
                 value={jiraIssueKey}
                 onChange={(e) => setJiraIssueKey(e.target.value.toUpperCase())}
-                autoFocus
               />
-              <span className="form-hint">Enter the Jira issue key you want to link (e.g., QARD-12345)</span>
+              <span className="form-hint">Enter the Jira issue key you want to link</span>
             </div>
             
             <div className="form-group">
@@ -1772,6 +1843,8 @@ function StrategyView() {
                   setShowJiraModal(false)
                   setJiraIssueKey('')
                   setJiraTitle('')
+                  setJiraSearchQuery('')
+                  setJiraSearchResults([])
                 }}
                 disabled={isLinkingJira}
               >
@@ -1819,6 +1892,89 @@ function StrategyView() {
             .jira-modal p {
               color: var(--text-secondary);
               margin-bottom: 24px;
+            }
+            
+            .search-input-wrapper {
+              display: flex;
+              gap: 8px;
+            }
+            
+            .search-input-wrapper .form-input {
+              flex: 1;
+            }
+            
+            .search-btn {
+              white-space: nowrap;
+            }
+            
+            .jira-search-results {
+              margin-top: 12px;
+              border: 1px solid var(--border-color);
+              border-radius: var(--radius-md);
+              max-height: 200px;
+              overflow-y: auto;
+            }
+            
+            .jira-result-item {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 12px;
+              cursor: pointer;
+              border-bottom: 1px solid var(--border-color);
+              transition: background 0.15s;
+            }
+            
+            .jira-result-item:last-child {
+              border-bottom: none;
+            }
+            
+            .jira-result-item:hover {
+              background: var(--bg-hover);
+            }
+            
+            .jira-result-key {
+              font-weight: 600;
+              color: var(--accent-cyan);
+              font-size: 0.875rem;
+              min-width: 100px;
+            }
+            
+            .jira-result-summary {
+              flex: 1;
+              font-size: 0.875rem;
+              color: var(--text-primary);
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+            
+            .jira-result-status {
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              background: var(--bg-tertiary);
+              padding: 2px 8px;
+              border-radius: 4px;
+            }
+            
+            .form-divider {
+              display: flex;
+              align-items: center;
+              margin: 20px 0;
+              color: var(--text-muted);
+              font-size: 0.8125rem;
+            }
+            
+            .form-divider::before,
+            .form-divider::after {
+              content: '';
+              flex: 1;
+              height: 1px;
+              background: var(--border-color);
+            }
+            
+            .form-divider span {
+              padding: 0 12px;
             }
             
             .form-group {

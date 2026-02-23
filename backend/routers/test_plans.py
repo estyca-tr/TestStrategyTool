@@ -5,8 +5,25 @@ from typing import List, Optional
 from database import get_db
 from models import TestPlan, TestStrategy
 from schemas import TestPlanCreate, TestPlanUpdate, TestPlanResponse
+from services.jira_client import JiraClient
 
 router = APIRouter()
+
+
+@router.get("/search-jira")
+def search_jira_issues(
+    query: str = Query("", description="Search text for issue summary"),
+    project_key: str = Query("QARD", description="Jira project key"),
+    issue_type: str = Query("Test Plan", description="Issue type to filter"),
+    max_results: int = Query(10, ge=1, le=50)
+):
+    """Search for Jira issues by summary text"""
+    try:
+        client = JiraClient()
+        results = client.search_issues(query, project_key, issue_type, max_results)
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("")
@@ -188,7 +205,7 @@ def link_jira_test_plan(
         project_id=strategy.project_id,
         title=plan_title,
         jira_issue_key=jira_issue_key,
-        jira_issue_url=jira_issue_url or f"https://etorogroup.atlassian.net/browse/{jira_issue_key}",
+        jira_issue_url=jira_issue_url or f"https://etoro-jira.atlassian.net/browse/{jira_issue_key}",
         jira_project_key=jira_project_key,
         status="active"
     )

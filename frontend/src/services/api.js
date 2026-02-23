@@ -186,6 +186,16 @@ export const testPlansAPI = {
     return fetchAPI(`/test-plans/link-jira?${params}`, {
       method: 'POST'
     })
+  },
+  
+  searchJira: (query = '', projectKey = 'QARD', issueType = 'Test Plan', maxResults = 10) => {
+    const params = new URLSearchParams({
+      query,
+      project_key: projectKey,
+      issue_type: issueType,
+      max_results: maxResults
+    })
+    return fetchAPI(`/test-plans/search-jira?${params}`)
   }
 }
 

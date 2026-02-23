@@ -154,4 +154,45 @@ class JiraClient:
                 return it
         
         return None
+    
+    def search_issues(self, query: str, project_key: str = "QARD", issue_type: str = "Test Plan", max_results: int = 10):
+        """Search for issues by text in summary"""
+        url = f"{self.base_url}/rest/api/3/search"
+        
+        # Build JQL query - search in summary, support partial matches
+        jql_parts = [f'project = "{project_key}"']
+        
+        if issue_type:
+            jql_parts.append(f'issuetype = "{issue_type}"')
+        
+        if query:
+            # Search in summary with partial match
+            jql_parts.append(f'summary ~ "{query}*"')
+        
+        jql = " AND ".join(jql_parts)
+        jql += " ORDER BY updated DESC"
+        
+        params = {
+            "jql": jql,
+            "maxResults": max_results,
+            "fields": "summary,key,issuetype,status"
+        }
+        
+        response = requests.get(url, headers=self._get_headers(), params=params, verify=self.verify_ssl)
+        
+        if response.status_code == 200:
+            data = response.json()
+            issues = data.get('issues', [])
+            return [
+                {
+                    "key": issue.get('key'),
+                    "summary": issue.get('fields', {}).get('summary', ''),
+                    "status": issue.get('fields', {}).get('status', {}).get('name', ''),
+                    "url": f"{self.base_url}/browse/{issue.get('key')}"
+                }
+                for issue in issues
+            ]
+        else:
+            print(f"Jira search error: {response.status_code} - {response.text}")
+            return []
 
