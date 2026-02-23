@@ -852,7 +852,7 @@ function StrategyView() {
                 {linkedTestPlans.map(plan => (
                   <div key={plan.id} className="linked-plan-item">
                     <a 
-                      href={plan.jira_issue_url}
+                      href={plan.jira_issue_url || `https://etorogroup.atlassian.net/browse/${plan.jira_issue_key}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="linked-plan-link"
