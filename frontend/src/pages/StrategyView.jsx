@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Edit2, Trash2, CheckCircle, Clock, FileText, MessageSquare, Send, X, ExternalLink, Download, FileDown, ChevronDown, FileType, Upload, Loader2, Users, Layers, BarChart3, Share2 } from 'lucide-react'
-import { strategiesAPI, commentsAPI, projectsAPI, participantsAPI, sharesAPI, authAPI } from '../services/api'
+import { strategiesAPI, commentsAPI, projectsAPI, participantsAPI, sharesAPI, authAPI, testPlansAPI } from '../services/api'
 import { format, parseISO } from 'date-fns'
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle } from 'docx'
 import { saveAs } from 'file-saver'
@@ -41,11 +41,9 @@ function StrategyView() {
   const [toast, setToast] = useState(null)
   const [confirmModal, setConfirmModal] = useState(null)
   const [showJiraModal, setShowJiraModal] = useState(false)
-  const [jiraProjectKey, setJiraProjectKey] = useState('QARD')
-  const [jiraIssueTypes, setJiraIssueTypes] = useState([])
-  const [selectedIssueType, setSelectedIssueType] = useState('Test Plan')
-  const [isLoadingIssueTypes, setIsLoadingIssueTypes] = useState(false)
-  const [isCreatingJira, setIsCreatingJira] = useState(false)
+  const [jiraIssueKey, setJiraIssueKey] = useState('')
+  const [isLinkingJira, setIsLinkingJira] = useState(false)
+  const [linkedTestPlans, setLinkedTestPlans] = useState([])
   const [project, setProject] = useState(null)
   const [participants, setParticipants] = useState([])
   const [activeTab, setActiveTab] = useState('content') // content, breakdown, progress
@@ -70,6 +68,7 @@ function StrategyView() {
   useEffect(() => {
     loadData()
     checkAuth()
+    loadLinkedTestPlans()
   }, [id])
   
   async function checkAuth() {
@@ -271,41 +270,57 @@ function StrategyView() {
     }
   }
   
-  async function handleCreateJiraTestPlan() {
-    if (!jiraProjectKey.trim()) {
-      showToast('error', '⚠️ Missing Project Key', 'Please enter a Jira project key')
+  async function handleLinkJiraTestPlan() {
+    if (!jiraIssueKey.trim()) {
+      showToast('error', '⚠️ Missing Issue Key', 'Please enter a Jira issue key (e.g., QARD-123)')
       return
     }
     
-    if (!selectedIssueType) {
-      showToast('error', '⚠️ Missing Issue Type', 'Please select an issue type')
-      return
-    }
-    
-    setIsCreatingJira(true)
+    setIsLinkingJira(true)
     
     try {
-      const result = await strategiesAPI.createJiraTestPlan(id, jiraProjectKey.trim(), selectedIssueType)
+      const result = await testPlansAPI.linkJira(id, jiraIssueKey.trim())
       
       setShowJiraModal(false)
-      setJiraProjectKey('')
-      setSelectedIssueType('')
-      setJiraIssueTypes([])
+      setJiraIssueKey('')
+      
+      // Refresh linked test plans
+      loadLinkedTestPlans()
       
       showToast(
         'success',
-        '🎫 Test Plan Created!',
-        `Created "${result.issue_key}" in Jira`,
+        '🔗 Test Plan Linked!',
+        `Linked "${result.jira_issue_key}" to this strategy`,
         { label: 'Open in Jira', url: result.issue_url }
       )
     } catch (err) {
       showToast(
         'error',
-        '❌ Failed to Create',
-        err.message || 'Could not create test plan in Jira. Please check the project key.'
+        '❌ Failed to Link',
+        err.message || 'Could not link test plan. Please check the issue key.'
       )
     } finally {
-      setIsCreatingJira(false)
+      setIsLinkingJira(false)
+    }
+  }
+  
+  async function loadLinkedTestPlans() {
+    try {
+      const plans = await testPlansAPI.getAll({ strategy_id: id })
+      setLinkedTestPlans(plans)
+    } catch (err) {
+      console.error('Failed to load linked test plans:', err)
+    }
+  }
+  
+  async function handleUnlinkTestPlan(planId) {
+    if (!confirm('Are you sure you want to unlink this test plan?')) return
+    try {
+      await testPlansAPI.delete(planId)
+      loadLinkedTestPlans()
+      showToast('success', '🗑️ Unlinked', 'Test plan unlinked successfully')
+    } catch (err) {
+      showToast('error', '❌ Error', err.message)
     }
   }
   
@@ -666,7 +681,7 @@ function StrategyView() {
             onClick={() => setShowJiraModal(true)}
           >
             <ExternalLink size={18} />
-            Create Test Plan in Jira
+            Link Jira Test Plan
           </button>
           <Link to={`/strategy/${id}/edit`} className="btn btn-secondary">
             <Edit2 size={18} />
@@ -816,6 +831,45 @@ function StrategyView() {
                 </a>
               ))}
             </nav>
+          </div>
+          
+          {/* Linked Jira Test Plans */}
+          <div className="sidebar-card">
+            <div className="card-header">
+              <h4>🔗 Linked Jira Issues</h4>
+              <button 
+                className="btn btn-ghost btn-xs"
+                onClick={() => setShowJiraModal(true)}
+                title="Link new Jira issue"
+              >
+                +
+              </button>
+            </div>
+            {linkedTestPlans.length === 0 ? (
+              <p className="text-muted text-sm">No linked issues yet</p>
+            ) : (
+              <div className="linked-plans-list">
+                {linkedTestPlans.map(plan => (
+                  <div key={plan.id} className="linked-plan-item">
+                    <a 
+                      href={plan.jira_issue_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="linked-plan-link"
+                    >
+                      🎫 {plan.jira_issue_key}
+                    </a>
+                    <button 
+                      className="btn btn-ghost btn-xs be-delete-btn"
+                      onClick={() => handleUnlinkTestPlan(plan.id)}
+                      title="Unlink"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </aside>
       </div>
@@ -1074,6 +1128,32 @@ function StrategyView() {
         
         .info-label {
           color: var(--text-muted);
+        }
+        
+        .linked-plans-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .linked-plan-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 6px 10px;
+          background: var(--bg-hover);
+          border-radius: var(--radius-sm);
+        }
+        
+        .linked-plan-link {
+          color: var(--accent-cyan);
+          text-decoration: none;
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+        
+        .linked-plan-link:hover {
+          text-decoration: underline;
         }
         
         .strategy-type-toggle {
@@ -1560,83 +1640,68 @@ function StrategyView() {
         </div>
       )}
       
-      {/* Jira Test Plan Modal */}
+      {/* Link Jira Test Plan Modal */}
       {showJiraModal && (
         <div className="modal-overlay">
           <div className="modal-content jira-modal">
             <div className="jira-modal-header">
-              <div className="jira-icon">🎫</div>
-              <h3>Create Test Plan in Jira</h3>
+              <div className="jira-icon">🔗</div>
+              <h3>Link Jira Test Plan</h3>
             </div>
-            <p>This will create a new Test Plan issue in Jira linked to this strategy.</p>
+            <p>Link an existing Jira issue to this strategy.</p>
             
             <div className="form-group">
-              <label className="form-label">Jira Project Key *</label>
+              <label className="form-label">Jira Issue Key *</label>
               <input
                 type="text"
                 className="form-input"
-                placeholder="e.g., MG, QA, TEST"
-                value={jiraProjectKey}
-                onChange={(e) => setJiraProjectKey(e.target.value.toUpperCase())}
+                placeholder="e.g., QARD-123"
+                value={jiraIssueKey}
+                onChange={(e) => setJiraIssueKey(e.target.value.toUpperCase())}
                 autoFocus
               />
-              <span className="form-hint">Enter the project key where the test plan should be created</span>
+              <span className="form-hint">Enter the Jira issue key you want to link (e.g., QARD-12345)</span>
             </div>
             
-            {jiraProjectKey.length >= 2 && (
-              <div className="form-group">
-                <label className="form-label">Issue Type *</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g., Test Plan, Story, Task, Bug"
-                  value={selectedIssueType}
-                  onChange={(e) => setSelectedIssueType(e.target.value)}
-                  list="issue-types-list"
-                />
-                <datalist id="issue-types-list">
-                  <option value="Test Plan" />
-                  <option value="Test" />
-                  <option value="Story" />
-                  <option value="Task" />
-                  <option value="Bug" />
-                  <option value="Epic" />
-                  <option value="Sub-task" />
-                </datalist>
-                <span className="form-hint">Enter the exact issue type name as it appears in Jira</span>
+            {jiraIssueKey && (
+              <div className="preview-box">
+                <span className="preview-label">Will link to:</span>
+                <a 
+                  href={`https://etorogroup.atlassian.net/browse/${jiraIssueKey}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="preview-value link"
+                >
+                  🔗 {jiraIssueKey}
+                </a>
               </div>
             )}
-            
-            <div className="preview-box">
-              <span className="preview-label">Will create:</span>
-              <span className="preview-value">Test Plan: {strategy?.title}</span>
-            </div>
             
             <div className="modal-actions">
               <button 
                 className="btn btn-ghost"
                 onClick={() => {
                   setShowJiraModal(false)
-                  setJiraProjectKey('')
+                  setJiraIssueKey('')
                 }}
-                disabled={isCreatingJira}
+                disabled={isLinkingJira}
               >
                 Cancel
               </button>
               <button 
                 className="btn btn-jira"
-                onClick={handleCreateJiraTestPlan}
-                disabled={isCreatingJira || !jiraProjectKey.trim() || !selectedIssueType}
+                onClick={handleLinkJiraTestPlan}
+                disabled={isLinkingJira || !jiraIssueKey.trim()}
               >
-                {isCreatingJira ? (
+                {isLinkingJira ? (
                   <>
                     <Loader2 size={16} className="spin" />
-                    Creating...
+                    Linking...
                   </>
                 ) : (
                   <>
                     <ExternalLink size={16} />
-                    Create in Jira
+                    Link Issue
                   </>
                 )}
               </button>

@@ -152,3 +152,53 @@ def delete_test_plan(plan_id: int, db: Session = Depends(get_db)):
     db.commit()
     return None
 
+
+@router.post("/link-jira", status_code=201)
+def link_jira_test_plan(
+    strategy_id: int,
+    jira_issue_key: str,
+    jira_issue_url: str = None,
+    db: Session = Depends(get_db)
+):
+    """Link an existing Jira issue to a strategy as a test plan"""
+    # Verify strategy exists
+    strategy = db.query(TestStrategy).filter(TestStrategy.id == strategy_id).first()
+    if not strategy:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    
+    # Check if already linked
+    existing = db.query(TestPlan).filter(
+        TestPlan.strategy_id == strategy_id,
+        TestPlan.jira_issue_key == jira_issue_key
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="This Jira issue is already linked to this strategy")
+    
+    # Extract project key from issue key (e.g., QARD-123 -> QARD)
+    jira_project_key = jira_issue_key.split('-')[0] if '-' in jira_issue_key else None
+    
+    # Create the link
+    db_plan = TestPlan(
+        strategy_id=strategy_id,
+        project_id=strategy.project_id,
+        title=f"Jira: {jira_issue_key}",
+        jira_issue_key=jira_issue_key,
+        jira_issue_url=jira_issue_url or f"https://etorogroup.atlassian.net/browse/{jira_issue_key}",
+        jira_project_key=jira_project_key,
+        status="active"
+    )
+    
+    db.add(db_plan)
+    db.commit()
+    db.refresh(db_plan)
+    
+    return {
+        "id": db_plan.id,
+        "strategy_id": db_plan.strategy_id,
+        "jira_issue_key": db_plan.jira_issue_key,
+        "jira_issue_url": db_plan.jira_issue_url,
+        "title": db_plan.title,
+        "created_at": db_plan.created_at
+    }
+

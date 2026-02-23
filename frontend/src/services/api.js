@@ -174,7 +174,18 @@ export const testPlansAPI = {
   
   delete: (id) => fetchAPI(`/test-plans/${id}`, {
     method: 'DELETE'
-  })
+  }),
+  
+  linkJira: (strategyId, jiraIssueKey, jiraIssueUrl = null) => {
+    const params = new URLSearchParams({
+      strategy_id: strategyId,
+      jira_issue_key: jiraIssueKey
+    })
+    if (jiraIssueUrl) params.append('jira_issue_url', jiraIssueUrl)
+    return fetchAPI(`/test-plans/link-jira?${params}`, {
+      method: 'POST'
+    })
+  }
 }
 
 // Comments (for reviews)
