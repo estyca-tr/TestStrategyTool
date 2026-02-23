@@ -312,7 +312,7 @@ function StrategyView() {
       
       // Use clean URL instead of backend's potentially malformed URL
       const cleanKey = extractJiraIssueKey(result.jira_issue_key || cleanIssueKey)
-      const cleanUrl = `https://etorogroup.atlassian.net/browse/${cleanKey}`
+      const cleanUrl = `https://etoro-jira.atlassian.net/browse/${cleanKey}`
       
       showToast(
         'success',
@@ -879,7 +879,7 @@ function StrategyView() {
                 {linkedTestPlans.map(plan => {
                   // Extract clean issue key (handles case where full URL was saved)
                   const cleanKey = extractJiraIssueKey(plan.jira_issue_key || '');
-                  const jiraUrl = `https://etorogroup.atlassian.net/browse/${cleanKey}`;
+                  const jiraUrl = `https://etoro-jira.atlassian.net/browse/${cleanKey}`;
                   console.log('Jira link debug:', { original: plan.jira_issue_key, cleanKey, jiraUrl });
                   return (
                   <div key={plan.id} className="linked-plan-item">
@@ -1755,7 +1755,7 @@ function StrategyView() {
               <div className="preview-box">
                 <span className="preview-label">Will link to:</span>
                 <a 
-                  href={`https://etorogroup.atlassian.net/browse/${extractJiraIssueKey(jiraIssueKey)}`}
+                  href={`https://etoro-jira.atlassian.net/browse/${extractJiraIssueKey(jiraIssueKey)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="preview-value link-button"
