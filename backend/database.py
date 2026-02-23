@@ -39,3 +39,34 @@ def init_db():
         User, Share
     )
     Base.metadata.create_all(bind=engine)
+    
+    # Run migrations for new columns
+    run_migrations()
+
+
+def run_migrations():
+    """Add missing columns to existing tables"""
+    from sqlalchemy import text
+    
+    migrations = [
+        # Add eta and duration_days to breakdown_items
+        ("breakdown_items", "eta", "ALTER TABLE breakdown_items ADD COLUMN eta TIMESTAMP NULL"),
+        ("breakdown_items", "duration_days", "ALTER TABLE breakdown_items ADD COLUMN duration_days INTEGER NULL"),
+    ]
+    
+    with engine.connect() as conn:
+        for table, column, sql in migrations:
+            try:
+                # Check if column exists (PostgreSQL)
+                check_sql = text(f"""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = '{table}' AND column_name = '{column}'
+                """)
+                result = conn.execute(check_sql)
+                if result.fetchone() is None:
+                    print(f"Adding column {column} to {table}...")
+                    conn.execute(text(sql))
+                    conn.commit()
+                    print(f"Column {column} added successfully!")
+            except Exception as e:
+                print(f"Migration for {table}.{column} skipped or failed: {e}")
