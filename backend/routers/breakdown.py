@@ -73,6 +73,8 @@ def build_category_response(cat, all_categories):
         name=cat.name,
         type=cat.type,
         order_index=cat.order_index,
+        eta=cat.eta,
+        duration_days=cat.duration_days,
         created_at=cat.created_at,
         items=items,
         children=children,
@@ -151,7 +153,9 @@ def create_breakdown_category(
         parent_id=category.parent_id,
         name=category.name,
         type=category.type,
-        order_index=category.order_index if category.order_index else max_order
+        order_index=category.order_index if category.order_index else max_order,
+        eta=category.eta,
+        duration_days=category.duration_days
     )
     db.add(db_category)
     db.commit()
@@ -164,6 +168,8 @@ def create_breakdown_category(
         name=db_category.name,
         type=db_category.type,
         order_index=db_category.order_index,
+        eta=db_category.eta,
+        duration_days=db_category.duration_days,
         created_at=db_category.created_at,
         items=[],
         children=[],
@@ -264,7 +270,9 @@ def create_breakdown_item(
         assignee_id=item.assignee_id,
         status=item.status,
         priority=item.priority,
-        order_index=item.order_index if item.order_index else max_order
+        order_index=item.order_index if item.order_index else max_order,
+        eta=item.eta,
+        duration_days=item.duration_days
     )
     db.add(db_item)
     db.commit()
@@ -282,6 +290,8 @@ def create_breakdown_item(
         status=db_item.status,
         priority=db_item.priority,
         order_index=db_item.order_index,
+        eta=db_item.eta,
+        duration_days=db_item.duration_days,
         created_at=db_item.created_at,
         updated_at=db_item.updated_at,
         sub_items=[]
